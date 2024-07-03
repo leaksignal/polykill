@@ -1,5 +1,6 @@
 let xhrList = [], scriptList = [], beaconList = [];
 let xhrSet = new Set(), scriptSet = new Set(), beaconSet = new Set();
+let tldSet = new Set();
 
 // Inject CSS to add a thin purple border around the page
 const style = document.createElement('style');
@@ -20,38 +21,29 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
-// Inject the monitoring enabled text
-// const monitoringText = document.createElement('a');
-// monitoringText.className = 'leaksignal-reporting-text';
-// monitoringText.innerText = 'Polykill Reporting Enabled';
-// monitoringText.href = '#';
-// monitoringText.onclick = () => {
-//   runConsoleReport();
-//   return false; // Prevent default link behavior
-// };
-//document.body.appendChild(monitoringText);
-
 // Observer for performance entries
 let observer = new PerformanceObserver((list) => {
   list.getEntries().forEach((entry) => {
-    console.log(1, entry);
     switch (entry.initiatorType) {
       case 'xmlhttprequest':
         if (!xhrSet.has(entry.name)) {
           xhrSet.add(entry.name);
           xhrList.push(entry);
+          tldSet.add(getTLD(entry.name));
         }
         break;
       case 'script':
         if (!scriptSet.has(entry.name)) {
           scriptSet.add(entry.name);
           scriptList.push(entry);
+          tldSet.add(getTLD(entry.name));
         }
         break;
       case 'beacon':
         if (!beaconSet.has(entry.name)) {
           beaconSet.add(entry.name);
           beaconList.push(entry);
+          tldSet.add(getTLD(entry.name));
         }
         break;
     }
@@ -60,8 +52,6 @@ let observer = new PerformanceObserver((list) => {
 observer.observe({ entryTypes: ["resource"] });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log(sender.tab ? "from a content script:" + sender.tab.url : "onMessage Called");
-
   if (request === 'complete') {
     runConsoleReport();
     sendResponse({status: "completed"}); // Ensure response is sent back
@@ -73,47 +63,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function runConsoleReport() {
   let urls = {
     url: trimQueryParams(window.location.href),
-    scripts: scriptList.map(item => ({ url: trimQueryParams(item.name), analysisSummary: "not populated" })),
-    xhrs: xhrList.map(item => ({ url: trimQueryParams(item.name), analysisSummary: "not populated" })),
-    beacons: beaconList.map(item => ({ url: trimQueryParams(item.name), analysisSummary: "not populated" })),
-    tlds: Array.from(new Set([...scriptList, ...xhrList, ...beaconList].map(item => getTLD(trimQueryParams(item.name))))),
+    scripts: scriptList.map(item => ({ url: trimQueryParams(item.name) })),
+    xhrs: xhrList.map(item => ({ url: trimQueryParams(item.name) })),
+    beacons: beaconList.map(item => ({ url: trimQueryParams(item.name) })),
   };
 
-  runMockAPIReport('https://httpbin.org/post', urls).then((results) => {
-    let reportContent = formatReport(results.scripts, results.xhrs, results.beacons, results.tlds);
+  runMockAPIReport('https://scan.leaksignal.com/api/v1/risk', urls).then((results) => {
+    let reportContent = formatReport(results.scripts, results.xhrs, results.beacons, Array.from(tldSet));
     setTimeout(() => {
       openReportWindow(reportContent);
     }, 3000);
   }).catch(error => {
-    console.error('Error in runMockAPIReport:', error);
+    console.error('Error in runConsoleReport:', error);
   });
 }
 
 function runMockAPIReport(input, data) {
-  console.log('runMockAPIReport', data.url); // Log the URL being processed
-  let callid = 'httpbin';
+  let callid = 'leaksignal';
   return new Promise((resolve, reject) => {
-    console.log('Sending message to background.js with:', { input, data, callid }); // Add logging here
     chrome.runtime.sendMessage({ input, data, callid }, (messageResponse) => {
       if (chrome.runtime.lastError) {
-        console.error('Runtime error:', chrome.runtime.lastError);
         reject(chrome.runtime.lastError);
         return;
       }
 
       const [response, error] = messageResponse;
       if (response === null) {
-        console.error('Error response:', error); // Log error
         reject(error);
       } else {
-        console.log('Response received:', response); // Log the received response
-        let responseData = JSON.parse(response.body.data); // Parse the data from httpbin response
+        let responseData = response.body; // Use the data from LeakSignal response
         // Map analysisResult to corresponding URL
         resolve({
           scripts: mapAnalysisResults(data.scripts, responseData.scripts),
           xhrs: mapAnalysisResults(data.xhrs, responseData.xhrs),
           beacons: mapAnalysisResults(data.beacons, responseData.beacons),
-          tlds: responseData.tlds || []
         });
       }
     });
@@ -125,7 +108,7 @@ function mapAnalysisResults(requestList, responseList) {
   return requestList.map(item => {
     const trimmedUrl = trimQueryParams(item.url);
     const result = responseList.find(responseItem => trimQueryParams(responseItem.url) === trimmedUrl);
-    return result ? { ...item, analysisSummary: result.analysisSummary } : item;
+    return result ? { ...item, analysisSummary: result.analysisSummary || {} } : item;
   });
 }
 
@@ -135,7 +118,6 @@ function trimQueryParams(url) {
     urlObj.search = '';
     return urlObj.toString();
   } catch (e) {
-    console.error('Invalid URL:', url);
     return url;
   }
 }
@@ -211,16 +193,27 @@ function sortAndFormatResults(results) {
   return formattedResults;
 }
 
-function formatURL(url, analysisResult) {
-  let formattedURL = `● ${url}\n  ○ Risk Analysis: ${analysisResult}\n\n`;
-  let urlObj = new URL(url);
-
-  if (urlObj.hostname.includes('polyfill.io')) {
-    formattedURL = `● <span style="color: red; font-weight: bold;">${url}</span>\n  ○ Alert: This URL is known to host polyfill.io scripts. See <a href="https://polykill.io" style="color: red;">polykill.io</a> for more details.\n\n`;
-  } else if (urlObj.pathname.includes('polyfill.js') || urlObj.pathname.includes('polyfill.min.js')) {
-    formattedURL = `● <span style="color: yellow;">${url}</span>\n  ○ Warning: Ensure this script does not originate from polyfill.io.\n\n`;
+function formatURL(url, analysisSummary) {
+  let formattedURL = `● ${url}\n`;
+  if (analysisSummary && typeof analysisSummary === 'object' && Object.keys(analysisSummary).length > 0) {
+    for (let key in analysisSummary) {
+      let formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+      let analysisResult = analysisSummary[key];
+      if (key === 'scriptBodyAnalysis') {
+        analysisResult = analysisResult || { status: 'PENDING' };
+        let statusColor = analysisResult.status === 'PENDING' ? 'grey' : (analysisResult.status === 'CLEAR' ? 'green' : 'red');
+        let link = analysisResult.status === 'PENDING' ? 'https://openai.com/chatgpt/' : 'https://developers.google.com/safe-browsing';
+        formattedURL += `  ○ ${formattedKey} (powered by ChatGPT): <a href="${link}" style="color:${statusColor};" target="_blank">${analysisResult.status}</a>\n`;
+      } else if (analysisResult && analysisResult.status) {
+        let statusColor = analysisResult.status === 'CLEAR' ? 'green' : 'red';
+        let link = key === 'blockListAnalysis' ? 'https://easylist.to/' : 'https://developers.google.com/safe-browsing';
+        formattedURL += `  ○ ${formattedKey}: <a href="${link}" style="color:${statusColor};" target="_blank">${analysisResult.status}</a>\n`;
+      }
+    }
+  } else {
+    formattedURL += `  ○ No analysis available\n`;
   }
-
+  formattedURL += '\n';
   return formattedURL;
 }
 

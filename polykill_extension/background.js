@@ -28,16 +28,16 @@ chrome.action.onClicked.addListener(tab => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Received message in background.js:', request); // Log the incoming message
-  if (request.callid === 'httpbin') {
-    console.log('Making POST request to https://httpbin.org/post with data:', request.data); // Log the data being sent
-    fetch('https://httpbin.org/post', {
+  if (request.callid === 'leaksignal') {
+    console.log('Making POST request to https://scan.leaksignal.com/api/v1/risk with data:', request.data); // Log the data being sent
+    fetch('https://scan.leaksignal.com/api/v1/risk', {
       method: 'POST',
       body: JSON.stringify(request.data),
       headers: {
         'Content-Type': 'application/json'
       }
     }).then(response => response.json().then(json => {
-      console.log('Response from httpbin:', json); // Log the response from httpbin
+      console.log('Response from LeakSignal:', json); // Log the response from LeakSignal
       sendResponse([{
         body: json,
         url: request.data.url,

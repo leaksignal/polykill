@@ -11,8 +11,9 @@ Follow these steps to load the Polykill Chrome Extension from a zip file.
 
 ### Step 2: Open Chrome Extensions Page
 
-1. Open Google Chrome.
-2. In the address bar, type `chrome://extensions/` and press Enter.
+1. Open Google Chrome. 
+2. Create a new profile to sterilize the browser environment from things like ad blockers.
+3. In the new profile address bar, type `chrome://extensions/` and press Enter.
 
 ### Step 3: Enable Developer Mode
 
@@ -33,11 +34,9 @@ Follow these steps to load the Polykill Chrome Extension from a zip file.
 
 1. Navigate to any webpage.
 2. Click the Polykill extension icon in the Chrome toolbar.
-3. The report will be generated and displayed.
+3. The report will be generated and displayed as a popup.
 
 ### Troubleshooting
 
 - If you encounter an error related to permissions, ensure that you have granted the necessary permissions for the extension.
 - If the extension does not appear or does not function correctly, try reloading the extension by clicking the **Reload** button next to it on the Extensions page.
-
-For any issues or further support, please contact support@polykill.com.
