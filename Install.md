@@ -6,7 +6,7 @@ Follow these steps to load the Polykill Chrome Extension from a zip file.
 
 ### Step 1: Download and Extract the Zip File
 
-1. Download the [zip file](polykill_extension.zip) containing the Polykill Chrome Extension.
+1. Download the [zip file](https://github.com/leaksignal/polykill/raw/main/polykill_extension.zip) containing the Polykill Chrome Extension.
 2. Extract the contents of the zip file to a directory on your computer.
 
 ### Step 2: Open Chrome Extensions Page
