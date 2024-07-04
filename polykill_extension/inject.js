@@ -18,8 +18,44 @@ style.innerHTML = `
     z-index: 9999; /* Ensure it is on top */
     pointer-events: none;
   }
+
+  .leaksignal-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Ensure it is on top */
+  }
+
+  .leaksignal-loading-message {
+    background-color: white;
+    border: 2px solid black;
+    padding: 20px;
+    font-size: 16px;
+    color: black;
+    text-align: center;
+  }
 `;
 document.head.appendChild(style);
+
+function showLoadingOverlay() {
+  const overlay = document.createElement('div');
+  overlay.classList.add('leaksignal-loading-overlay');
+  overlay.innerHTML = `<div class="leaksignal-loading-message">Your report is loading. If this message does not go away, reload this tab and try again.</div>`;
+  document.body.appendChild(overlay);
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.querySelector('.leaksignal-loading-overlay');
+  if (overlay) {
+    overlay.remove();
+  }
+}
 
 // Observer for performance entries
 let observer = new PerformanceObserver((list) => {
@@ -53,6 +89,7 @@ observer.observe({ entryTypes: ["resource"] });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request === 'complete') {
+    showLoadingOverlay();
     runConsoleReport();
     sendResponse({status: "completed"}); // Ensure response is sent back
   }
@@ -68,13 +105,20 @@ function runConsoleReport() {
     beacons: beaconList.map(item => ({ url: trimQueryParams(item.name) })),
   };
 
-  runMockAPIReport('https://scan.leaksignal.com/api/v1/risk', urls).then((results) => {
-    let reportContent = formatReport(results.scripts, results.xhrs, results.beacons, Array.from(tldSet));
-    setTimeout(() => {
-      openReportWindow(reportContent);
-    }, 3000);
-  }).catch(error => {
-    console.error('Error in runConsoleReport:', error);
+  chrome.runtime.sendMessage({ callid: 'checkVersion' }, (versionInfo) => {
+    runMockAPIReport('https://scan.leaksignal.com/api/v1/risk', urls).then((results) => {
+      let reportContent = formatReport(results.scripts, results.xhrs, results.beacons, Array.from(tldSet));
+      if (versionInfo) {
+        reportContent = `<b>There's a new version of the Polykill Chrome Extension available <a href="${versionInfo.new_version_url}">here</a>.</b>\n\n${versionInfo.message}\n\n` + reportContent;
+      }
+      setTimeout(() => {
+        openReportWindow(reportContent);
+        hideLoadingOverlay();
+      }, 3000);
+    }).catch(error => {
+      console.error('Error in runConsoleReport:', error);
+      hideLoadingOverlay();
+    });
   });
 }
 

@@ -51,5 +51,38 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     return true; // Will respond asynchronously
   }
+  
+  if (request.callid === 'checkVersion') {
+    checkForNewVersion(sendResponse);
+    return true; // Will respond asynchronously
+  }
+  
   return true; // Ensure the listener returns true to indicate asynchronous response
 });
+
+function checkForNewVersion(sendResponse) {
+  fetch('https://scan.leaksignal.com/api/v1/extension')
+    .then(response => {
+      if (response.status === 404) {
+        console.log('Extension version check not available.');
+        sendResponse(null);
+        return;
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data && data.new_version_url) {
+        sendResponse(data);
+      } else {
+        sendResponse(null);
+      }
+    })
+    .catch(error => {
+      console.error('Error checking for new version:', error);
+      sendResponse(null);
+    });
+}
+
+// Check for new version on startup and periodically
+checkForNewVersion(() => {});
+setInterval(() => checkForNewVersion(() => {}), 24 * 60 * 60 * 1000); // Check once a day
