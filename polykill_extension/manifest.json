@@ -1,7 +1,7 @@
 {
   "name": "Polykill Chrome Extension",
   "description": "Monitor and analyze JavaScript risk in the browser.",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "manifest_version": 3,
   "background": {
     "service_worker": "background.js"
@@ -21,8 +21,7 @@
   },
   "permissions": [
     "activeTab",
-    "webNavigation",
-    "scripting"
+    "webNavigation"
   ],
   "content_scripts": [
     {
@@ -36,8 +35,5 @@
       "resources": ["images/*"],
       "matches": ["<all_urls>"]
     }
-  ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
-  }
+  ]
 }

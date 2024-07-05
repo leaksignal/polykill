@@ -105,20 +105,13 @@ function runConsoleReport() {
     beacons: beaconList.map(item => ({ url: trimQueryParams(item.name) })),
   };
 
-  chrome.runtime.sendMessage({ callid: 'checkVersion' }, (versionInfo) => {
-    runMockAPIReport('https://scan.leaksignal.com/api/v1/risk', urls).then((results) => {
-      let reportContent = formatReport(results.scripts, results.xhrs, results.beacons, Array.from(tldSet));
-      if (versionInfo) {
-        reportContent = `<b>There's a new version of the Polykill Chrome Extension available <a href="${versionInfo.new_version_url}">here</a>.</b>\n\n${versionInfo.message}\n\n` + reportContent;
-      }
-      setTimeout(() => {
-        openReportWindow(reportContent);
-        hideLoadingOverlay();
-      }, 3000);
-    }).catch(error => {
-      console.error('Error in runConsoleReport:', error);
-      hideLoadingOverlay();
-    });
+  runMockAPIReport('https://scan.leaksignal.com/api/v1/risk', urls).then((results) => {
+    let reportContent = formatReport(results.scripts, results.xhrs, results.beacons, Array.from(tldSet));
+    setTimeout(() => {
+      openReportWindow(reportContent);
+    }, 3000);
+  }).catch(error => {
+    console.error('Error in runConsoleReport:', error);
   });
 }
 
@@ -181,6 +174,7 @@ function formatReport(scripts, xhrs, beacons, tlds) {
 
   // Add TLD Inventory (Summary)
   reportContent += '<b>TLD Inventory (Summary)</b>\n\n';
+  reportContent += 'The following first and third party domains are running JavaScript on this page. Make sure these are trusted domains and review the findings from each script loading below.\n\n';
   tlds.forEach(tld => {
     reportContent += `● ${tld}\n`;
   });
