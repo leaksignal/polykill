@@ -88,7 +88,7 @@ let observer = new PerformanceObserver((list) => {
 observer.observe({ entryTypes: ["resource"] });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request === 'complete') {
+  if (request === 'complete' || request === 'runReportAfterReload') {
     showLoadingOverlay();
     runConsoleReport();
     sendResponse({status: "completed"}); // Ensure response is sent back
@@ -108,6 +108,7 @@ function runConsoleReport() {
   runMockAPIReport('https://scan.leaksignal.com/api/v1/risk', urls).then((results) => {
     let reportContent = formatReport(results.scripts, results.xhrs, results.beacons, Array.from(tldSet));
     setTimeout(() => {
+      hideLoadingOverlay(); // Hide the overlay when the popup appears
       openReportWindow(reportContent);
     }, 3000);
   }).catch(error => {
@@ -171,6 +172,7 @@ function formatReport(scripts, xhrs, beacons, tlds) {
 
   let reportContent = `Polykill - ${fullUrl} Site Report\n\n`;
   reportContent += `${formattedDate}\n\n`;
+  reportContent += `<i>If you're currently using an ad blocker, disable it to see all URLs loaded by this site.</i>\n\n`;
 
   // Add TLD Inventory (Summary)
   reportContent += '<b>TLD Inventory (Summary)</b>\n\n';

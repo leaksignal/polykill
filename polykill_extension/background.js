@@ -23,6 +23,12 @@ chrome.action.onClicked.addListener(tab => {
     chrome.tabs.sendMessage(tab.id, 'complete', response => {});
   } else {
     console.log('Page not fully loaded.');
+    chrome.tabs.reload(tab.id, {}, () => {
+      console.log("Polykill extension needs to reload the page to inventory all scripts");
+      setTimeout(() => {
+        chrome.tabs.sendMessage(tab.id, 'runReportAfterReload', response => {});
+      }, 3000); // Wait 3 seconds before sending the message to run the report
+    });
   }
 });
 
