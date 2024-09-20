@@ -41,7 +41,18 @@ style.innerHTML = `
     text-align: center;
   }
 `;
-document.head.appendChild(style);
+
+function injectStyle() {
+  const head = document.head || document.getElementsByTagName('head')[0];
+  if (head) {
+    head.appendChild(style);
+  } else {
+    // If head is not yet available, retry after a short delay
+    setTimeout(injectStyle, 50);
+  }
+}
+
+injectStyle();
 
 function showLoadingOverlay() {
   const overlay = document.createElement('div');
@@ -62,14 +73,14 @@ let observer = new PerformanceObserver((list) => {
   list.getEntries().forEach((entry) => {
     switch (entry.initiatorType) {
       case 'xmlhttprequest':
-        if (!xhrSet.has(entry.name)) {
+        if (!xhrSet.has(entry.name) && entry.name.startsWith('http')) {
           xhrSet.add(entry.name);
           xhrList.push(entry);
           tldSet.add(getTLD(entry.name));
         }
         break;
       case 'script':
-        if (!scriptSet.has(entry.name)) {
+        if (!scriptSet.has(entry.name) && entry.name.startsWith('http')) {
           scriptSet.add(entry.name);
           scriptList.push(entry);
           tldSet.add(getTLD(entry.name));
@@ -85,7 +96,44 @@ let observer = new PerformanceObserver((list) => {
     }
   });
 });
+
 observer.observe({ entryTypes: ["resource"] });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  // MutationObserver to detect dynamically added scripts
+  const mutationObserver = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+      mutation.addedNodes.forEach(node => {
+        // Check if the node is a script element and hasn't been recorded yet
+        if (node.tagName === 'SCRIPT' && node.src && !scriptSet.has(node.src)) {
+          scriptSet.add(node.src);
+          scriptList.push({ name: node.src });
+        }
+      });
+
+      // Handle cases where script `src` is set after insertion
+      if (mutation.type === 'attributes' && mutation.target.tagName === 'SCRIPT' && mutation.target.src) {
+        const scriptNode = mutation.target;
+        if (!scriptSet.has(scriptNode.src)) {
+          scriptSet.add(scriptNode.src);
+          scriptList.push({ name: scriptNode.src });
+        }
+      }
+    });
+  });
+
+  // Start observing both head and body for added nodes and attribute changes
+  mutationObserver.observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+  mutationObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+
+  // Stop observing after 10 seconds
+  setTimeout(() => {
+    mutationObserver.disconnect();
+    console.log("Monitoring stopped after 10 seconds.");
+    console.log("Detected scripts:", scriptList);
+  }, 10000);
+});
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request === 'complete' || request === 'runReportAfterReload') {
@@ -99,10 +147,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 function runConsoleReport() {
   let urls = {
-    url: trimQueryParams(window.location.href),
-    scripts: scriptList.map(item => ({ url: trimQueryParams(item.name) })),
-    xhrs: xhrList.map(item => ({ url: trimQueryParams(item.name) })),
-    beacons: beaconList.map(item => ({ url: trimQueryParams(item.name) })),
+    url: window.location.href,
+    scripts: scriptList.map(item => ({ url: item.name })),
+    xhrs: xhrList.map(item => ({ url: item.name })),
+    beacons: beaconList.map(item => ({ url: item.name })),
   };
 
   runMockAPIReport('https://scan.leaksignal.com/api/v1/risk', urls).then((results) => {
@@ -110,7 +158,7 @@ function runConsoleReport() {
     setTimeout(() => {
       hideLoadingOverlay(); // Hide the overlay when the popup appears
       openReportWindow(reportContent);
-    }, 3000);
+    }, 10000);
   }).catch(error => {
     console.error('Error in runConsoleReport:', error);
   });
@@ -129,8 +177,7 @@ function runMockAPIReport(input, data) {
       if (response === null) {
         reject(error);
       } else {
-        let responseData = response.body; // Use the data from LeakSignal response
-        // Map analysisResult to corresponding URL
+        let responseData = response.body;
         resolve({
           scripts: mapAnalysisResults(data.scripts, responseData.scripts),
           xhrs: mapAnalysisResults(data.xhrs, responseData.xhrs),
@@ -144,9 +191,12 @@ function runMockAPIReport(input, data) {
 function mapAnalysisResults(requestList, responseList) {
   if (!responseList) return requestList;
   return requestList.map(item => {
-    const trimmedUrl = trimQueryParams(item.url);
+    const originalUrl = item.url; // Store the original URL
+    //console.log(originalUrl);
+    const trimmedUrl = trimQueryParams(originalUrl); // Trimmed URL for display purposes
+
     const result = responseList.find(responseItem => trimQueryParams(responseItem.url) === trimmedUrl);
-    return result ? { ...item, analysisSummary: result.analysisSummary || {} } : item;
+    return result ? { ...item, originalUrl: originalUrl, trimmedUrl: trimmedUrl, analysisSummary: result.analysisSummary || {} } : item;
   });
 }
 
@@ -156,16 +206,12 @@ function trimQueryParams(url) {
     urlObj.search = '';
     return urlObj.toString();
   } catch (e) {
+    console.error('Invalid URL encountered:', url);
     return url;
   }
 }
 
 function formatReport(scripts, xhrs, beacons, tlds) {
-  scripts = scripts || [];
-  xhrs = xhrs || [];
-  beacons = beacons || [];
-  tlds = tlds || [];
-
   const now = new Date();
   const formattedDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + ', ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) + ' UTC';
   const fullUrl = trimQueryParams(window.location.href);
@@ -202,10 +248,20 @@ function formatReport(scripts, xhrs, beacons, tlds) {
   return reportContent;
 }
 
+function isValidUrl(string) {
+  try {
+    new URL(string);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function sortAndFormatResults(results) {
   let uniqueResults = new Map();
+  
   results.forEach(result => {
-    const trimmedUrl = trimQueryParams(result.url);
+    const trimmedUrl = result.trimmedUrl;
     if (!uniqueResults.has(trimmedUrl)) {
       uniqueResults.set(trimmedUrl, result);
     }
@@ -213,32 +269,43 @@ function sortAndFormatResults(results) {
 
   let thirdPartyResults = [];
   let firstPartyResults = [];
+
   uniqueResults.forEach(result => {
-    let url = new URL(result.url);
-    if (url.hostname !== window.location.hostname) {
-      thirdPartyResults.push(result);
+    // Check if the URL is valid before processing
+    if (isValidUrl(result.originalUrl)) {
+      let url = new URL(result.originalUrl);
+      if (url.hostname !== window.location.hostname) {
+        thirdPartyResults.push(result);
+      } else {
+        firstPartyResults.push(result);
+      }
     } else {
-      firstPartyResults.push(result);
+      console.warn('Invalid URL encountered:', result.originalUrl);
     }
   });
 
-  thirdPartyResults.sort((a, b) => a.url.localeCompare(b.url));
-  firstPartyResults.sort((a, b) => a.url.localeCompare(b.url));
+  thirdPartyResults.sort((a, b) => a.trimmedUrl.localeCompare(b.trimmedUrl));
+  firstPartyResults.sort((a, b) => a.trimmedUrl.localeCompare(b.trimmedUrl));
 
   let formattedResults = '';
   [...thirdPartyResults, ...firstPartyResults].forEach(result => {
-    formattedResults += formatURL(result.url, result.analysisSummary);
+    formattedResults += formatURL(result.originalUrl, result.trimmedUrl, result.analysisSummary);
   });
 
   return formattedResults;
 }
 
-function formatURL(url, analysisSummary) {
-  let formattedURL = `● ${url}\n`;
+
+
+function formatURL(originalUrl, trimmedUrl, analysisSummary) {
+  // Create a hyperlink using the original URL, displaying the trimmed version
+  let formattedURL = `● <a href="${originalUrl}" target="_blank">${trimmedUrl}</a>\n`;
+
   if (analysisSummary && typeof analysisSummary === 'object' && Object.keys(analysisSummary).length > 0) {
     for (let key in analysisSummary) {
       let formattedKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
       let analysisResult = analysisSummary[key];
+
       if (key === 'scriptBodyAnalysis') {
         analysisResult = analysisResult || { status: 'PENDING' };
         let statusColor = analysisResult.status === 'PENDING' ? 'grey' : (analysisResult.status === 'CLEAR' ? 'green' : 'red');
@@ -253,9 +320,12 @@ function formatURL(url, analysisSummary) {
   } else {
     formattedURL += `  ○ No analysis available\n`;
   }
+
   formattedURL += '\n';
   return formattedURL;
 }
+
+
 
 function getTLD(url) {
   try {
