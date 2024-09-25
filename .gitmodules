@@ -1,0 +1,3 @@
+[submodule "leakscanner"]
+	path = packages/api-client/leakscanner
+	url = git@github.com:leaksignal/leakscanner.git

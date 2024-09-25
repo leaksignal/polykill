@@ -1,0 +1,16 @@
+{
+  "name": "polykill-core",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "exports": {
+    ".": "./dist/polykill.js",
+    "./*": "./dist/*.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

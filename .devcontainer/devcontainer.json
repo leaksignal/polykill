@@ -1,0 +1,14 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+	"name": "Node.js & TypeScript",
+	"build": {
+		"dockerfile": "devcontainer.Dockerfile"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
+		},
+		"postCreateCommand": "apt-get update && apt-get install -y default-jdk"
+	}
+}
