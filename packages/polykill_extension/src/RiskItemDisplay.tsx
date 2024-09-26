@@ -61,20 +61,30 @@ export default function RiskItemDisplay({ url, analysisSummary }: RiskItem) {
 			</a>
 			{analysisSummary ? (
 				<>
-					<b>Javascript Risk Analysis:</b>{' '}
-					<JavascriptRiskAnalysis
-						analysis={analysisSummary.javascriptRiskAnalysis}
-					/>
-					<b>Block List AnalysisL</b>{' '}
-					<BlockListAnalysis
-						analysis={analysisSummary.blockListAnalysis}
-					/>
+					<p>
+						<b>Javascript Risk Analysis:</b>{' '}
+						<JavascriptRiskAnalysis
+							analysis={analysisSummary.javascriptRiskAnalysis}
+						/>
+					</p>
+					<p>
+						<b>Block List Analysis:</b>{' '}
+						<BlockListAnalysis
+							analysis={analysisSummary.blockListAnalysis}
+						/>
+					</p>
 					{analysisSummary.scriptBodyAnalysis && (
 						<>
-							<b>Script Body Analysis (Powered by ChatGPT):</b>{' '}
-							<ScriptBodyAnalysis
-								analysis={analysisSummary.scriptBodyAnalysis}
-							/>
+							<p>
+								<b>
+									Script Body Analysis (Powered by ChatGPT):
+								</b>{' '}
+								<ScriptBodyAnalysis
+									analysis={
+										analysisSummary.scriptBodyAnalysis
+									}
+								/>
+							</p>
 						</>
 					)}
 				</>

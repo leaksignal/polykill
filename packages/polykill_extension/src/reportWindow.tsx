@@ -5,7 +5,7 @@ import { RiskAssessment200Response } from 'polykill-leakscanner-api-client';
 import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 
-import { sortAndFormatResults } from './sortAndFormatResults';
+import RiskItemDisplay from './RiskItemDisplay';
 
 export default function Report({
 	inventory,
@@ -62,7 +62,22 @@ export default function Report({
 				managed. It is important to monitor and analyze these scripts to
 				prevent potential data leaks or malicious activities.
 			</p>
-			<p>{sortAndFormatResults(scripts)}</p>
+			{scripts.length > 0 ? (
+				<ul>
+					{scripts.map(s => (
+						<>
+							<RiskItemDisplay
+								url={s.url}
+								analysisSummary={s.analysisSummary}
+							/>
+						</>
+					))}
+				</ul>
+			) : (
+				<p>
+					<i>No scripts found </i>
+				</p>
+			)}
 			<p>
 				<b>XHR Inventory</b>
 			</p>
@@ -72,11 +87,41 @@ export default function Report({
 				identify any unauthorized data transfers and mitigate the risk
 				of data leaks.
 			</p>
-			<p>{sortAndFormatResults(xhrs)}</p>
+			{xhrs.length > 0 ? (
+				<ul>
+					{xhrs.map(s => (
+						<>
+							<RiskItemDisplay
+								url={s.url}
+								analysisSummary={s.analysisSummary}
+							/>
+						</>
+					))}
+				</ul>
+			) : (
+				<p>
+					<i>No XHRs found </i>
+				</p>
+			)}
 			<p>
 				<b>Beacon Inventory</b>
 			</p>
-			<p>{sortAndFormatResults(beacons)}</p>
+			{beacons.length > 0 ? (
+				<ul>
+					{beacons.map(s => (
+						<>
+							<RiskItemDisplay
+								url={s.url}
+								analysisSummary={s.analysisSummary}
+							/>
+						</>
+					))}
+				</ul>
+			) : (
+				<p>
+					<i>No beacons found </i>
+				</p>
+			)}
 		</div>
 	);
 }
