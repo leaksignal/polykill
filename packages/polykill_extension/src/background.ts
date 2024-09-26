@@ -1,7 +1,7 @@
 import { Configuration, DefaultApi } from 'polykill-leakscanner-api-client';
 
 const api = new DefaultApi(
-	new Configuration({ basePath: 'https://scan.leaksignal.com/api/v1' })
+	new Configuration({ basePath: 'https://polykill.io/api/v1' })
 );
 
 let enabled = false;
