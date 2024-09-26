@@ -28,4 +28,4 @@ unused development artifacts.
 
 using VS Code Dev Containers is strongly recommended.
 
-opening the project in VS Code will automatically install the required runtimes. once you are in the development container environment, in a terminal you can then run `npm install` to install the required dependencies, which will also generate the source code for the api-client package from the API definitions.
+opening the project in VS Code will automatically install the required runtimes. once you are in the development container environment, in a terminal you can then run `npm install` to install the required dependencies, which will also generate the source code for the api-client package from the API definitions. then running `npm run build` will build all packages including the Chrome extension.
