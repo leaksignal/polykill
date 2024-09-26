@@ -57,7 +57,13 @@ function ScriptBodyAnalysis({
 	);
 }
 
-export default function RiskItemDisplay({ url, analysisSummary }: RiskItem) {
+export default function RiskItemDisplay({
+	url,
+	analysisSummary,
+	scriptAnalysis
+}: RiskItem & {
+	scriptAnalysis?: boolean;
+}) {
 	if (!analysisSummary) return <p>No analysis available</p>;
 
 	return (
@@ -79,7 +85,7 @@ export default function RiskItemDisplay({ url, analysisSummary }: RiskItem) {
 							analysis={analysisSummary.blockListAnalysis}
 						/>
 					</p>
-					{analysisSummary.scriptBodyAnalysis && (
+					{scriptAnalysis && analysisSummary.scriptBodyAnalysis && (
 						<>
 							<p>
 								<b>

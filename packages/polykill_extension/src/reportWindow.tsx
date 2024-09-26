@@ -69,6 +69,7 @@ export default function Report({
 							<RiskItemDisplay
 								url={s.url}
 								analysisSummary={s.analysisSummary}
+								scriptAnalysis
 							/>
 						</>
 					))}
