@@ -6,6 +6,7 @@ import {
 	RiskItemAnalysisSummaryJavascriptRiskAnalysis,
 	RiskItemAnalysisSummaryScriptBodyAnalysis
 } from 'polykill-leakscanner-api-client';
+import ReactMarkdown from 'react-markdown';
 
 function JavascriptRiskAnalysis({
 	analysis
@@ -40,15 +41,20 @@ function ScriptBodyAnalysis({
 }: {
 	analysis: RiskItemAnalysisSummaryScriptBodyAnalysis;
 }) {
-	const props = {
-		href:
-			analysis.status === 'PENDING'
-				? 'https://openai.com/chatgpt/'
-				: 'https://developers.google.com/safe-browsing',
-		style: { color: analysis.status === 'CLEAR' ? 'green' : 'red' },
-		target: '_blank'
-	};
-	return <a {...props}>{analysis.status}</a>;
+	return (
+		<div>
+			<blockquote>
+				<ReactMarkdown children={analysis.status!} />
+			</blockquote>
+			<p>
+				<i>
+					ChatGPT can make mistakes, including both false positives
+					and false negatives. Always independently verify the
+					contents of included scripts.
+				</i>
+			</p>
+		</div>
+	);
 }
 
 export default function RiskItemDisplay({ url, analysisSummary }: RiskItem) {

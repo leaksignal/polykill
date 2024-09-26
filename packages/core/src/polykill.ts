@@ -14,10 +14,20 @@ export default async function createInventory() {
 
 	const xhrs = resources
 		.filter(resource => resource.initiatorType === 'xmlhttprequest')
+		.filter(resource => {
+			const resourceUrl = new URL(resource.name);
+
+			return resourceUrl.origin === window.location.origin;
+		})
 		.map(resource => resource.name);
 
 	const beacons = resources
 		.filter(resource => resource.initiatorType === 'beacon')
+		.filter(resource => {
+			const resourceUrl = new URL(resource.name);
+
+			return resourceUrl.origin === window.location.origin;
+		})
 		.map(resource => resource.name);
 
 	const secondLevelDomains = Array.from(
