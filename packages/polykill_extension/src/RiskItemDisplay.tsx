@@ -43,7 +43,13 @@ function ScriptBodyAnalysis({
 }) {
 	return (
 		<div>
-			<blockquote>
+			<blockquote
+				style={{
+					margin: '1em .5em',
+					paddingLeft: '.5em',
+					borderLeft: '3px solid grey'
+				}}
+			>
 				<ReactMarkdown children={analysis.status!} />
 			</blockquote>
 			<p>
@@ -67,7 +73,13 @@ export default function RiskItemDisplay({
 	if (!analysisSummary) return <p>No analysis available</p>;
 
 	return (
-		<div>
+		<div
+			style={{
+				border: '1px solid black',
+				margin: '.5em 0',
+				padding: '.5em'
+			}}
+		>
 			<a href={url} target="_blank">
 				{url}
 			</a>

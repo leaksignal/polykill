@@ -30,16 +30,16 @@ export default async function createInventory() {
 		})
 		.map(resource => resource.name);
 
-	const secondLevelDomains = Array.from(
+	const thirdPartyDomains = Array.from(
 		new Set(resources.map(resource => getSecondLevelDomain(resource.name)))
-	);
+	).filter(domain => domain !== getSecondLevelDomain(url));
 
 	return {
 		url,
 		scripts,
 		xhrs,
 		beacons,
-		secondLevelDomains
+		thirdPartyDomains
 	};
 }
 

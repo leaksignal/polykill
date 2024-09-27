@@ -14,7 +14,7 @@ export default function Report({
 	inventory: PKInventory;
 	riskAssessment: RiskAssessment200Response;
 }) {
-	const { secondLevelDomains } = inventory;
+	const { thirdPartyDomains } = inventory;
 	const { scripts = [], xhrs = [], beacons = [] } = riskAssessment;
 
 	const now = new Date();
@@ -42,17 +42,19 @@ export default function Report({
 					all URLs loaded by this site.
 				</i>
 			</p>
-			{/* <p>
+			<p>
 				<b>TLD Inventory (Summary)</b>
 			</p>
 			<p>
-				The following first and third party domains are running
-				JavaScript on this page. Make sure these are trusted domains and
-				review the findings from each script loading below.
+				The following third party domains are running JavaScript on this
+				page. Make sure these are trusted domains and review the
+				findings from each script loading below.
 			</p>
-			{secondLevelDomains.map((tld: any) => (
-				<p>● {tld}</p>
-			))} */}
+			<ul>
+				{thirdPartyDomains.map(tld => (
+					<li key={tld}>{tld}</li>
+				))}
+			</ul>
 			<p>
 				<b>JavaScript Inventory</b>
 			</p>
@@ -63,7 +65,11 @@ export default function Report({
 				prevent potential data leaks or malicious activities.
 			</p>
 			{scripts.length > 0 ? (
-				<ul>
+				<ul
+					style={{
+						padding: 0
+					}}
+				>
 					{scripts.map(s => (
 						<>
 							<RiskItemDisplay
@@ -89,7 +95,11 @@ export default function Report({
 				of data leaks.
 			</p>
 			{xhrs.length > 0 ? (
-				<ul>
+				<ul
+					style={{
+						padding: 0
+					}}
+				>
 					{xhrs.map(s => (
 						<>
 							<RiskItemDisplay
@@ -108,7 +118,11 @@ export default function Report({
 				<b>Beacon Inventory</b>
 			</p>
 			{beacons.length > 0 ? (
-				<ul>
+				<ul
+					style={{
+						padding: 0
+					}}
+				>
 					{beacons.map(s => (
 						<>
 							<RiskItemDisplay

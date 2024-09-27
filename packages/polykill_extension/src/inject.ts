@@ -90,7 +90,8 @@ function inventoryToRiskAssessmentRequest({
 		url,
 		scripts: scripts.map(url => ({ url })),
 		xhrs: xhrs.map(url => ({ url })),
-		beacons: beacons.map(url => ({ url }))
+		beacons: beacons.map(url => ({ url })),
+		enable_ai: true
 	};
 }
 

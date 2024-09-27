@@ -34,6 +34,12 @@ export interface RiskAssessmentRequest {
     url?: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof RiskAssessmentRequest
+     */
+    enable_ai?: boolean;
+    /**
+     * 
      * @type {Array<RiskAssessmentRequestScriptsInner>}
      * @memberof RiskAssessmentRequest
      */
@@ -72,6 +78,7 @@ export function RiskAssessmentRequestFromJSONTyped(json: any, ignoreDiscriminato
     return {
         
         'url': !exists(json, 'url') ? undefined : json['url'],
+        'enable_ai': !exists(json, 'enable_ai') ? undefined : json['enable_ai'],
         'scripts': !exists(json, 'scripts') ? undefined : ((json['scripts'] as Array<any>).map(RiskAssessmentRequestScriptsInnerFromJSON)),
         'xhrs': !exists(json, 'xhrs') ? undefined : ((json['xhrs'] as Array<any>).map(RiskAssessmentRequestScriptsInnerFromJSON)),
         'beacons': !exists(json, 'beacons') ? undefined : ((json['beacons'] as Array<any>).map(RiskAssessmentRequestScriptsInnerFromJSON)),
@@ -88,6 +95,7 @@ export function RiskAssessmentRequestToJSON(value?: RiskAssessmentRequest | null
     return {
         
         'url': value.url,
+        'enable_ai': value.enable_ai,
         'scripts': value.scripts === undefined ? undefined : ((value.scripts as Array<any>).map(RiskAssessmentRequestScriptsInnerToJSON)),
         'xhrs': value.xhrs === undefined ? undefined : ((value.xhrs as Array<any>).map(RiskAssessmentRequestScriptsInnerToJSON)),
         'beacons': value.beacons === undefined ? undefined : ((value.beacons as Array<any>).map(RiskAssessmentRequestScriptsInnerToJSON)),
