@@ -9,7 +9,8 @@
   "license": "ISC",
   "description": "",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "leakscanner/fe/packages/*"
   ],
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.6",
