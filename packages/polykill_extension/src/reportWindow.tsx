@@ -1,11 +1,14 @@
 import React from 'react';
 
+import {
+	BeaconRiskDisplay,
+	ScriptRiskDisplay,
+	XHRRiskDisplay
+} from 'polykill-common/components/RiskItemDisplay';
 import { PKInventory } from 'polykill-core';
 import { RiskAssessment200Response } from 'polykill-leakscanner-api-client';
-import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
-
-import RiskItemDisplay from './RiskItemDisplay';
+import { FaExternalLinkAlt } from 'react-icons/fa';
 
 export default function Report({
 	inventory,
@@ -14,7 +17,7 @@ export default function Report({
 	inventory: PKInventory;
 	riskAssessment: RiskAssessment200Response;
 }) {
-	const { thirdPartyDomains } = inventory;
+	const { thirdPartyDomains, url } = inventory;
 	const { scripts = [], xhrs = [], beacons = [] } = riskAssessment;
 
 	const now = new Date();
@@ -71,13 +74,16 @@ export default function Report({
 					}}
 				>
 					{scripts.map(s => (
-						<>
-							<RiskItemDisplay
-								url={s.url}
-								analysisSummary={s.analysisSummary}
-								scriptAnalysis
-							/>
-						</>
+						<ScriptRiskDisplay riskItem={s}>
+							<a
+								href={`https://polykill.io/scan/script/${encodeURIComponent(s.url!)}?page=${encodeURIComponent(
+									url
+								)}`}
+								target="_blank"
+							>
+								View on Polykill.io <FaExternalLinkAlt />
+							</a>
+						</ScriptRiskDisplay>
 					))}
 				</ul>
 			) : (
@@ -100,13 +106,17 @@ export default function Report({
 						padding: 0
 					}}
 				>
-					{xhrs.map(s => (
-						<>
-							<RiskItemDisplay
-								url={s.url}
-								analysisSummary={s.analysisSummary}
-							/>
-						</>
+					{xhrs.map(x => (
+						<XHRRiskDisplay riskItem={x}>
+							<a
+								href={`https://polykill.io/scan/xhr/${encodeURIComponent(x.url!)}?page=${encodeURIComponent(
+									url
+								)}`}
+								target="_blank"
+							>
+								View on Polykill.io <FaExternalLinkAlt />
+							</a>
+						</XHRRiskDisplay>
 					))}
 				</ul>
 			) : (
@@ -123,13 +133,17 @@ export default function Report({
 						padding: 0
 					}}
 				>
-					{beacons.map(s => (
-						<>
-							<RiskItemDisplay
-								url={s.url}
-								analysisSummary={s.analysisSummary}
-							/>
-						</>
+					{beacons.map(b => (
+						<BeaconRiskDisplay riskItem={b}>
+							<a
+								href={`https://polykill.io/scan/beacon/${encodeURIComponent(b.url!)}?page=${encodeURIComponent(
+									url
+								)}`}
+								target="_blank"
+							>
+								View on Polykill.io <FaExternalLinkAlt />
+							</a>
+						</BeaconRiskDisplay>
 					))}
 				</ul>
 			) : (

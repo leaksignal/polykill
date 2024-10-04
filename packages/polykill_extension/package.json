@@ -4,16 +4,19 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c rollup.config.js",
+    "dev": "npm run build -- -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "polykill-common": "^1.0.0",
     "polykill-core": "0.0.0",
     "polykill-leakscanner-api-client": "0.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0",
     "react-markdown": "^8.0.6"
   },
   "devDependencies": {

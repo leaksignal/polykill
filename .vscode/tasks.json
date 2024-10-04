@@ -10,6 +10,17 @@
 			},
 			"problemMatcher": [],
 			"label": "npm: build"
+		},
+		{
+			"type": "npm",
+			"script": "dev",
+			"problemMatcher": [],
+			"label": "npm: dev",
+			"detail": "npm run --workspaces --if-present dev",
+			"runOptions": {
+				"runOn": "folderOpen",
+				"instanceLimit": 1
+			}
 		}
 	]
 }
