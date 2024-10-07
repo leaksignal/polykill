@@ -81,7 +81,8 @@ export default function Report({
 								)}`}
 								target="_blank"
 							>
-								View on Polykill.io <FaExternalLinkAlt />
+								View AI Analysis on Polykill.io{' '}
+								<FaExternalLinkAlt />
 							</a>
 						</ScriptRiskDisplay>
 					))}
@@ -114,7 +115,8 @@ export default function Report({
 								)}`}
 								target="_blank"
 							>
-								View on Polykill.io <FaExternalLinkAlt />
+								View Full Analysis on Polykill.io{' '}
+								<FaExternalLinkAlt />
 							</a>
 						</XHRRiskDisplay>
 					))}
@@ -141,7 +143,8 @@ export default function Report({
 								)}`}
 								target="_blank"
 							>
-								View on Polykill.io <FaExternalLinkAlt />
+								View Full Analysis on Polykill.io{' '}
+								<FaExternalLinkAlt />
 							</a>
 						</BeaconRiskDisplay>
 					))}
