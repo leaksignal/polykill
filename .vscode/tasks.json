@@ -20,7 +20,8 @@
 			"runOptions": {
 				"runOn": "folderOpen",
 				"instanceLimit": 1
-			}
+			},
+			"isBackground": true
 		}
 	]
 }
