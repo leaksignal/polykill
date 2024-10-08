@@ -11,7 +11,8 @@
   "description": "",
   "workspaces": [
     "packages/*",
-    "leakscanner/fe/packages/*"
+    "leakscanner/fe/packages/*",
+    "!leakscanner/fe/packages/web"
   ],
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.6",
