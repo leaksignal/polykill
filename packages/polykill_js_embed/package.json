@@ -1,23 +1,18 @@
 {
-  "name": "polykill_extension",
-  "version": "0.0.9",
+  "name": "polykill_js_embed",
+  "version": "1.0.0",
+  "description": "",
   "type": "module",
   "scripts": {
     "build": "rollup -c rollup.config.js",
     "dev": "npm run build -- -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "demo": "http-server demo"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
-    "polykill-common": "^1.0.0",
-    "polykill-core": "0.0.0",
-    "polykill-leakscanner-api-client": "0.0.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-icons": "^5.3.0",
-    "react-markdown": "^8.0.6"
+    "polykill-core": "^0.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.0",
@@ -26,6 +21,7 @@
     "@types/chrome": "^0.0.271",
     "@types/react": "^18.3.9",
     "@types/react-dom": "^18.3.0",
+    "http-server": "^14.1.1",
     "rollup": "^4.22.2",
     "rollup-plugin-replace": "^2.2.0",
     "tslib": "^2.7.0",

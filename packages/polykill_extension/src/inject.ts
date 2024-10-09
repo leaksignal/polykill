@@ -1,8 +1,6 @@
-import createInventory, { PKInventory } from 'polykill-core';
-import {
-	RiskAssessment200Response,
-	RiskAssessmentRequest
-} from 'polykill-leakscanner-api-client';
+import createInventory from 'polykill-core';
+import { inventoryToRiskAssessmentRequest } from 'polykill-core/util/inventoryToRiskAssessmentRequest';
+import { RiskAssessmentRequest } from 'polykill-leakscanner-api-client';
 
 import { injectStyle } from './injectStyle';
 import { openReportWindow } from './reportWindow';
@@ -76,22 +74,6 @@ async function runReport() {
 	} catch (error) {
 		console.error('Error in runConsoleReport:', error);
 	}
-}
-
-function inventoryToRiskAssessmentRequest({
-	inventory,
-	url
-}: {
-	inventory: PKInventory;
-	url: string;
-}): RiskAssessmentRequest {
-	const { scripts, xhrs, beacons } = inventory;
-	return {
-		url,
-		scripts: scripts.map(url => ({ url })),
-		xhrs: xhrs.map(url => ({ url })),
-		beacons: beacons.map(url => ({ url }))
-	};
 }
 
 function asyncSendMessage(message: any): Promise<any> {
